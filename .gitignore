@@ -1,0 +1,11 @@
+env/
+node_modules
+*.parquet
+dist/
+.env
+
+.vscode/
+
+data.db
+error_files.txt
+file.txt
