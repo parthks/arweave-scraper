@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "axios";
-import { TransactionData } from "./types";
+import { GQLTransactionData } from "./types";
 
 // variables are after, block_min, block_max, limit
 type makeTxnGraphqlCallVariables = {
@@ -67,7 +67,7 @@ export type txnQueryResponse = {
       };
       edges: {
         cursor: string;
-        node: TransactionData;
+        node: GQLTransactionData;
       }[];
     };
   };

@@ -1,114 +1,55 @@
 // downloaded all data from indexed.xyz. Now uploading to clickhouse
 // GQL is very slow and rate limited. So indexed.xyz is a lifesaver
 
+// import { uploadTxnsToClickhouse } from "./clickhouse";
+import { uploadTxnsToMeiliSearch } from "./meili";
+
 const fs = require("fs");
 const path = require("path");
 const fg = require("fast-glob");
-import { createClient } from "@clickhouse/client";
-// import { parquetMetadata, parquetRead } from "hyparquet";
 
-// import * as parquet from "@dsnp/parquetjs";
+const BATCH_SIZE = 100000; // Adjust the batch size based on your memory constraints
 
-// @ts-ignore
-// import * as parquet from "parquetjs-lite";
-// import { ParquetSchema, ParquetWriter, ParquetReader } from "parquets";
+export type BatchData = {
+  id: string;
+  created_at: string;
+  data_size: string;
+  height: number;
+  content_type: string;
+  reward: string;
+  parent: string;
+  owner_address: string;
+  tags: { name: string; value: string }[];
+};
 
-const client = createClient({
-  url: "https://q50r0xb4wu.asia-southeast1.gcp.clickhouse.cloud:8443",
-  username: process.env.CLICKHOUSE_USERNAME,
-  password: process.env.CLICKHOUSE_PASSWORD,
-});
+export type TransactionData = {
+  transaction_id: string;
+  transaction_date: string;
+  size: number;
+  block_height: number;
+  content_type: string;
+  fee: number;
+  parent_id: string;
+  owner: string;
+};
 
-const BATCH_SIZE = 20000; // Adjust the batch size based on your memory constraints
+let ALL_TXN_IDS: string[] = [];
+if (fs.existsSync("all_txn_ids.txt")) {
+  const data = fs.readFileSync("all_txn_ids.txt", "utf8");
+  ALL_TXN_IDS = data.split("\n");
+  console.log(ALL_TXN_IDS.length, "txn ids loaded from file");
+}
 
-const uploadTxnsToClickhouse = async (batch: any[]) => {
-  console.log("Uploading batch to Clickhouse");
-  const tags = [] as any[];
-  const readyUploadData = batch.map((data) => {
-    const txnTags = data.tags.map((tag: { name: string; value: string }[]) => {
-      return { transaction_id: data.id, ...tag };
-    });
-    tags.push(...txnTags);
+console.log("All txn ids:", ALL_TXN_IDS.length);
 
-    return {
-      transaction_id: data.id,
-      transaction_date: data.created_at,
-      size: Number(data.data_size),
-      block_height: data.height,
-      content_type: data.content_type,
-      fee: parseInt(data.reward),
-      parent_id: data.parent,
-      owner: data.owner_address,
-    };
-  });
-
-  // Create a session
-
-  //   const createTempTxnTableQuery = `
-  //   CREATE TEMPORARY TABLE temp_transactions AS SELECT * FROM transactions WHERE 1 = 0;
-  // `;
-  //   await client.query({
-  //     query: createTempTxnTableQuery,
-  //     clickhouse_settings: {
-  //       wait_end_of_query: 1,
-  //     },
-  //   });
-
-  console.log("Uploading", readyUploadData.length, "transactions and", tags.length, "tags");
-  const txnRows = await client.insert({
-    table: "transactions",
-    values: readyUploadData,
-
-    clickhouse_settings: {
-      // Allows to insert serialized JS Dates (such as '2023-12-06T10:54:48.000Z')
-      date_time_input_format: "best_effort",
-    },
-    format: "JSONEachRow",
-  });
-  // Move distinct rows from temp_transactions to transactions
-  //   const distinctQuery = `
-  //      INSERT INTO transactions
-  //      SELECT DISTINCT * FROM temp_transactions;
-  //    `;
-  //   await client.query({
-  //     query: distinctQuery,
-  //     clickhouse_settings: {
-  //       wait_end_of_query: 1,
-  //     },
-  //   });
-
-  //   const createTempTagsTableQuery = `
-  //   CREATE TEMPORARY TABLE temp_transactions AS SELECT * FROM transactions WHERE 1 = 0;
-  // `;
-  //   await client.query({
-  //     query: createTempTagsTableQuery,
-  //     clickhouse_settings: {
-  //       wait_end_of_query: 1,
-  //     },
-  //   });
-  const tagRows = await client.insert({
-    table: "transaction_tags",
-    values: tags,
-    clickhouse_settings: {
-      // Allows to insert serialized JS Dates (such as '2023-12-06T10:54:48.000Z')
-      date_time_input_format: "best_effort",
-    },
-    format: "JSONEachRow",
-  });
-  // Move distinct rows from temp_transactions to transactions
-  //   const distinctTagsQuery = `
-  //     INSERT INTO transaction_tags
-  //     SELECT DISTINCT * FROM temp_transactions;
-  //   `;
-  //   await client.query({
-  //     query: distinctTagsQuery,
-  //     clickhouse_settings: {
-  //       wait_end_of_query: 1,
-  //     },
-  //   });
-  console.log(readyUploadData);
-  console.log("Done uploading batch to Clickhouse", tagRows.executed, txnRows.executed);
-  //   throw new Error("Error");
+const uploadData = async (data: BatchData[]) => {
+  // await uploadTxnsToClickhouse(data);
+  await uploadTxnsToMeiliSearch(data);
+  // save the ids to a file
+  console.log("Saving txn ids to file");
+  const ids = data.map((d) => d.id);
+  ALL_TXN_IDS.push(...ids);
+  fs.writeFileSync("all_txn_ids.txt", ALL_TXN_IDS.join("\n"));
 };
 
 const getFilesInBatches = async (folderPath: string) => {
@@ -130,10 +71,22 @@ const getFilesInBatches = async (folderPath: string) => {
         fs.appendFileSync("error_files.txt", file + "\n");
         continue;
       }
-      console.log("got", data.length, "transactions");
-      batch.push(...data);
+      if (ALL_TXN_IDS.indexOf(data[0]?.id) === -1) {
+        console.log("got", data.length, "transactions");
+        batch.push(...data);
+      }
+
+      // const size = Buffer.byteLength(JSON.stringify(data));
+      // console.log("Size of data:", size, "bytes", "Batch size:", batch.length);
+      // // if size is greater than 50MB, upload the data
+      // if (size > 50 * 1024 * 1024) {
+      //   await uploadData(batch);
+      //   // Clear the batch
+      //   batch.length = 0;
+      // }
+
       if (batch.length > BATCH_SIZE) {
-        await uploadTxnsToClickhouse(batch);
+        await uploadData(batch);
         // Clear the batch
         batch.length = 0;
       }
@@ -149,24 +102,7 @@ const db = new duckdb.Database(":memory:");
 const conn = new duckdb.Connection(db);
 
 async function _convertParquetToJson(parquetFilePath: string): Promise<any[]> {
-  //   const schema = new parquet.ParquetSchema({
-  //     created_at: { type: "TIMESTAMP_MILLIS" },
-  //   });
-
-  //   const reader = await parquet.ParquetReader.openFile(parquetFilePath);
-  //   const cursor = reader.getCursor();
-  //   const records: any[] = [];
-
-  //   let record = null;
-  //   while ((record = await cursor.next())) {
-  //     console.log("record", record);
-  //     records.push(record);
-  //   }
-
-  //   await reader.close();
-
   const q = `SELECT * FROM read_parquet('${parquetFilePath}')`;
-  console.log(q);
 
   try {
     const stmt = await conn.prepare(q);
@@ -214,15 +150,6 @@ function _convertToJson(str: string) {
     const key = keyValuePairs.split("value=")[0].split("name=")[1].trim().slice(0, -1);
     // console.log("key", key, "value", value, "\n");
 
-    // Create a new object with quoted keys and values
-    // const jsonKeyValuePairs = keyValuePairs.map((pair) => {
-    //   console.log("pair", pair);
-    //   const [key, value] = pair.split("=");
-    //   return `"${key.trim()}": "${value.trim()}"`;
-    // });
-
-    // Join the key-value pairs into a JSON string
-    // return "{" + `"${key.trim()}": "${value.trim()}"` + "}";
     jsonArrayResult.push({ name: key, value: value });
   });
 

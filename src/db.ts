@@ -1,5 +1,5 @@
 import sqlite3 from "sqlite3";
-import { TransactionData } from "./types";
+import { GQLTransactionData } from "./types";
 
 // Open a database connection
 const db = new sqlite3.Database("data.db", (err) => {
@@ -50,7 +50,7 @@ db.exec(`
  )
 `);
 
-export async function saveTxnData(data: TransactionData[]) {
+export async function saveTxnData(data: GQLTransactionData[]) {
   const insertStmt = db.prepare(`
         INSERT INTO transactions (id, fee, size, block_height, parent_id, owner)
         VALUES (?, ?, ?, ?, ?, ?)

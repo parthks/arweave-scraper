@@ -1,4 +1,4 @@
-export type TransactionData = {
+export type GQLTransactionData = {
   id: string;
   owner: {
     address: string;

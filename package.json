@@ -3,16 +3,19 @@
     "@clickhouse/client": "^1.4.0",
     "@dsnp/parquetjs": "^1.7.0",
     "axios": "^1.7.2",
+    "dotenv": "^16.4.5",
     "duckdb": "^1.0.0",
     "fast-glob": "^3.3.2",
     "hyparquet": "^1.0.1",
     "json2csv": "^6.0.0-alpha.2",
+    "meilisearch": "^0.41.0",
     "parquetjs-lite": "^0.8.7",
     "parquets": "^0.10.10",
     "sqlite3": "^5.1.7"
   },
   "scripts": {
-    "go": "ts-node src/index.ts",
+    "gql": "ts-node src/index.ts",
+    "upload": "ts-node src/main.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },

@@ -8,4 +8,5 @@ dist/
 
 data.db
 error_files.txt
+all_txn_ids.txt
 file.txt
