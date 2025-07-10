@@ -1,133 +1,185 @@
-Of course! Here is a comprehensive README for your `arweave-scraper` project, generated based on the file structure and code you provided.
+```markdown
+# 🎨 Arweave Scraper 🚀
+
+```ascii
+                                     _.--""--._
+                                   .'          `.
+                                  /   O      O   \
+                                 |    \  ^^  /    |
+                                 \     `----'     /
+                                  `. _______ .'
+                                    //_____\\
+                                   (( ____ ))
+                                    `-----'
+                               Arweave Blockchain Analytics
+```
+
+[![GitHub stars](https://img.shields.io/github/stars/parthks/arweave-scraper?style=for-the-badge)](https://github.com/parthks/arweave-scraper/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/parthks/arweave-scraper?style=for-the-badge)](https://github.com/parthks/arweave-scraper/network)
+[![GitHub license](https://img.shields.io/github/license/parthks/arweave-scraper?style=for-the-badge)](https://github.com/parthks/arweave-scraper/blob/main/LICENSE)
+[![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Python](https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Google Cloud](https://img.shields.io/badge/google--cloud-%234285f4.svg?style=for-the-badge&logo=google-cloud&logoColor=white)](https://cloud.google.com/)
+
 
 ---
 
-# Arweave Scraper
+## 🌟 Feature Highlights ✨
 
-A comprehensive toolkit for scraping and processing analytics data from the Arweave blockchain. It provides tools for both live scraping via GraphQL and bulk ingesting of pre-downloaded transaction data into powerful analytics backends.
+-   **Live GraphQL Scraping:**  ⚡ Scrape transaction metadata in real-time using GraphQL.  Handles rate limits and gateway failures intelligently.
+-   **Bulk Data Ingestion:** 📦 Efficiently processes large `.parquet` datasets (e.g., from indexed.xyz).
+-   **Multi-Database Support:** 📊 Integrates with SQLite, ClickHouse, and MeiliSearch for diverse analytical needs.
+-   **Resilient Design:** 🛠️ Robust error handling and gateway rotation ensures continuous operation.
+-   **Extensible Architecture:** 💻 Easily add new data sources and output destinations thanks to the TypeScript structure.
+-   **Typo-Tolerant Search:** 💡 MeiliSearch enables lightning-fast searches, even with typos.
 
-## Overview
 
-This project is designed to tackle Arweave data analytics in two primary ways:
+---
 
-1.  **Live GraphQL Scraping (`yarn gql`):** A resilient, concurrent scraper that connects to public Arweave gateways to fetch transaction metadata block-by-block. It's built to handle network issues, rate limits, and failing gateways by intelligently rotating through a large, fresh list of endpoints. Data from this process is saved to a local SQLite database (`data.db`).
+## 🛠️ Tech Stack 🛠️
 
-2.  **Bulk Data Ingestion (`yarn upload`):** A high-performance script designed to process large, pre-downloaded datasets of Arweave transactions in `.parquet` format (such as those from [indexed.xyz](https://indexed.xyz/)). It uses DuckDB for efficient in-memory processing and uploads the cleaned, structured data into **MeiliSearch** for fast, typo-tolerant search and **ClickHouse** for large-scale analytical queries.
+| Technology        | Badge                                                                   |
+|--------------------|------------------------------------------------------------------------|
+| Node.js           | [![Node.js](https://img.shields.io/badge/node.js-6DA55F?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/) |
+| TypeScript        | [![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/) |
+| SQLite            | [![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=flat-square&logo=sqlite&logoColor=white)](https://www.sqlite.org/) |
+| ClickHouse        | [![ClickHouse](https://img.shields.io/badge/clickhouse-%23007ACC.svg?style=flat-square&logo=clickhouse&logoColor=white)](https://clickhouse.com/) |
+| MeiliSearch       | [![MeiliSearch](https://img.shields.io/badge/meilisearch-%23007ACC.svg?style=flat-square&logo=meilisearch&logoColor=white)](https://www.meilisearch.com/) |
+| Axios             | [![Axios](https://img.shields.io/badge/axios-%23007ACC.svg?style=flat-square&logo=axios&logoColor=white)](https://axios-http.com/) |
+| DuckDB            | [![DuckDB](https://img.shields.io/badge/duckdb-%23007ACC.svg?style=flat-square&logo=duckdb&logoColor=white)](https://duckdb.org/) |
+| ParquetJS         | [![ParquetJS](https://img.shields.io/badge/parquetjs-%23007ACC.svg?style=flat-square&logo=parquet&logoColor=white)](https://github.com/apache/parquet-format) |
+| Python           | [![Python](https://img.shields.io/badge/python-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/) |
 
-## Features
 
--   **Resilient Gateway Management:** Automatically rotates through a large pool of public Arweave gateways, handling rate limits (429), timeouts, and permanent failures (5xx) to ensure continuous scraping.
--   **Dual Data Ingestion Modes:**
-    -   **Live Scraper:** Fetches real-time transaction data via GraphQL.
-    -   **Bulk Ingestor:** Processes large `.parquet` datasets efficiently using DuckDB.
--   **Multiple Database Backends:** Supports storing and searching data in:
-    -   **SQLite:** For local development and smaller-scale scraping.
-    -   **ClickHouse:** For storing massive datasets for complex analytical queries.
-    -   **MeiliSearch:** For providing a fast, full-text search experience over transaction metadata and tags.
--   **Extensible:** Built with TypeScript, making it easy to add new data sources or destinations.
+---
 
-## Getting Started
+## 🚀 Quick Start ⚡
 
-Follow these instructions to get a copy of the project up and running on your local machine.
+1.  **Clone the repository:** `git clone https://github.com/parthks/arweave-scraper.git`
+2.  **Install dependencies:** `yarn install`  (and `pip install requests`)
+3.  **Update gateways:** `python endpoints.py` (fetches a fresh list of Arweave gateways)
+4.  **Run the scraper:** `yarn gql` (for live scraping) or `yarn upload` (for bulk ingestion).  Configure `.env` with API keys.
 
-### Prerequisites
 
--   [Node.js](https://nodejs.org/) (v20.x or higher recommended)
--   [Yarn](https://yarnpkg.com/)
--   [Python 3](https://www.python.org/downloads/)
--   `pip` (Python package installer)
+---
 
-### Installation
+## 📖 Detailed Usage 📚
 
-1.  **Clone the repository:**
-    ```sh
-    git clone https://github.com/your-username/arweave-scraper.git
-    cd arweave-scraper
-    ```
+### Live Scraping (GraphQL)
 
-2.  **Install Node.js dependencies:**
-    ```sh
-    yarn install
-    ```
-
-3.  **Install Python dependencies:**
-    ```sh
-    pip install requests
-    ```
-
-4.  **Set up environment variables:**
-    Create a `.env` file in the root of the project and add the necessary credentials for the services you intend to use.
-
-    ```env
-    # MeiliSearch Credentials (for bulk upload)
-    MEILI_API_KEY=your_meilisearch_api_key
-
-    # Clickhouse Credentials (for bulk upload)
-    CLICKHOUSE_USERNAME=your_clickhouse_username
-    CLICKHOUSE_PASSWORD=your_clickhouse_password
-    ```
-
-## Usage
-
-### 1. Update Gateway List (Recommended First Step)
-
-Before scraping, it's a good idea to get a fresh list of active Arweave gateways.
-
-```sh
-python endpoints.py
-```
-
-This script queries the Viewblock API, filters for healthy HTTPS gateways, and saves them to `gateways.json`.
-
-### 2. Live Scraping (GraphQL)
-
-This script scrapes data block-by-block using GraphQL and saves it to a local `data.db` SQLite file. It is designed to run multiple concurrent workers for faster scraping.
-
-```sh
+```bash
 yarn gql
 ```
 
-You can configure the starting block, block increment, and concurrency in `src/index.ts`.
+This starts the live scraper.  The starting block, increment, and concurrency are configurable in `src/index.ts`.
 
-### 3. Bulk Data Ingestion (Parquet Files)
+### Bulk Data Ingestion (Parquet)
 
-This script processes `.parquet` files and uploads them to MeiliSearch and/or ClickHouse. It is optimized for handling the data dumps from [indexed.xyz](https://indexed.xyz/).
+1.  Place your `.parquet` files in a directory (e.g., `/path/to/your/data`).
+2.  Update `folderPath` in `src/main.ts` to point to your data directory.
+3.  Run: `yarn upload`
 
-1.  Place your `.parquet` files in a directory on your local machine.
-2.  Update the `folderPath` variable in `src/main.ts` to point to this directory:
-    ```typescript
-    // src/main.ts
-    const folderPath = "/path/to/your/arweave/data/transactions";
-    ```
-3.  Run the upload script:
-    ```sh
-    yarn upload
-    ```
 
-*Note: The script currently prioritizes uploading to MeiliSearch. The ClickHouse upload functionality is present in `src/clickhouse.ts` but is commented out in `src/main.ts`. You can easily re-enable it if needed.*
+---
 
-### Available Scripts
-
--   `yarn gql`: Run the live GraphQL scraper.
--   `yarn upload`: Run the bulk data ingestor for Parquet files.
--   `yarn build`: Compile TypeScript code to JavaScript in the `dist/` directory.
--   `yarn start`: Run the compiled version of the live scraper from the `dist/` directory.
-
-## Project Structure
+## 🏗️ Project Structure 📦
 
 ```
 arweave-scraper/
-├── src/                  # Main TypeScript source code
-│   ├── index.ts          # Entry point for live GraphQL scraping
-│   ├── main.ts           # Entry point for bulk Parquet data ingestion
-│   ├── graphql.ts        # Arweave GraphQL queries and client logic
-│   ├── Gateway.ts        # Manages the pool of Arweave gateways for resilience
-│   ├── db.ts             # SQLite database handler
-│   ├── clickhouse.ts     # ClickHouse database handler
-│   ├── meili.ts          # MeiliSearch handler
-│   └── types.ts          # TypeScript type definitions
-├── endpoints.py          # Python script to fetch an up-to-date gateway list
-├── gateways.json         # Stores the list of Arweave gateways
-├── package.json          # Project dependencies and scripts
-└── tsconfig.json         # TypeScript compiler configuration
+├── src/                  # TypeScript source code
+│   ├── index.ts          # Live scraping entry point
+│   ├── main.ts           # Bulk ingestion entry point
+│   ├── ...               # Other modules
+├── endpoints.py          # Python script for gateway updates
+├── gateways.json         # List of Arweave gateways
+├── package.json          # Project dependencies
+└── tsconfig.json         # TypeScript compiler config
+```
+
+
+---
+
+## 🎯 API Documentation 📖
+
+<details><summary><b>ClickHouse API</b></summary>
+
+| Function             | Description                                                                                                    |
+|----------------------|----------------------------------------------------------------------------------------------------------------|
+| `uploadTxnsToClickHouse(batch: BatchData[])` | Uploads a batch of transaction data to ClickHouse.                                                        |
+
+</details>
+
+<details><summary><b>MeiliSearch API</b></summary>
+
+| Function             | Description                                                                                                |
+|----------------------|------------------------------------------------------------------------------------------------------------|
+| `uploadTxnsToMeiliSearch(batch: BatchData[])` | Uploads a batch of transaction data to MeiliSearch.                                                     |
+
+</details>
+
+---
+
+## 🔧 Configuration Options ⚙️
+
+| Variable           | Description                                      | Type    | Default |
+|--------------------|--------------------------------------------------|---------|---------|
+| `MEILI_API_KEY`     | MeiliSearch API key                             | string  |         |
+| `CLICKHOUSE_USERNAME` | ClickHouse username                              | string  |         |
+| `CLICKHOUSE_PASSWORD` | ClickHouse password                              | string  |         |
+| `BLOCK_MIN`       | Starting block for GraphQL scraper              | number  | 0       |
+| `BLOCK_INCREMENT`   | Block increment for GraphQL scraper              | number  | 100     |
+| `folderPath`       | Path to Parquet files for bulk ingestion      | string  |         |
+
+
+---
+
+## 📸 Screenshots/Demo 📸
+
+**(Add screenshots or GIFs here showcasing the application's functionality)**
+
+---
+
+## 🤝 Contributing Guidelines 🌟
+
+1.  Fork the repository.
+2.  Create a new branch (`git checkout -b feature/your-feature`).
+3.  Make your changes.
+4.  Commit your changes (`git commit -m "Add your feature"`).
+5.  Push to your branch (`git push origin feature/your-feature`).
+6.  Create a pull request.
+
+---
+
+## 📜 License & Acknowledgments 🙏
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 👥 Contributors 🧑‍💻
+
+**(Add contributor avatars and links here)**
+
+---
+
+## 📞 Support & Contact 📧
+
+[![Twitter](https://img.shields.io/badge/twitter-%231DA1F2.svg?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/parthks)
+[![Email](https://img.shields.io/badge/email-D7D7D7?style=for-the-badge&logo=gmail&logoColor=white)](mailto:parthks@example.com)
+
+
+```mermaid
+graph TD
+    A[Start] --> B{Live Scraping?};
+    B -- Yes --> C[GraphQL Scraper];
+    B -- No --> D[Bulk Ingestion];
+    C --> E[Save to SQLite];
+    D --> F[Process .parquet];
+    F --> G{ClickHouse?};
+    G -- Yes --> H[Upload to ClickHouse];
+    G -- No --> I[Upload to MeiliSearch];
+    H --> J[Analytics];
+    I --> J;
+    J --> K[End];
 ```
